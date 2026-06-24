@@ -6,7 +6,7 @@ import { HistoricoDialog } from '../components/HistoricoDialog';
 import { listarEstoque, registrarEntrada, registrarSaida, ajustarSaldo } from '../api/estoqueApi';
 import type { Estoque } from '../types/estoque';
 
-export function EstoqueDashboardPage() {
+export default function EstoqueDashboardPage() {
   const [itens, setItens] = useState<Estoque[]>([]);
   const [filtroProduto, setFiltroProduto] = useState('');
   const [carregando, setCarregando] = useState(false);

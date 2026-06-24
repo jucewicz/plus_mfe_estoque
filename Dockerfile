@@ -3,6 +3,9 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 COPY . .
+# VITE_* so e' embutida no bundle em tempo de build, nao de runtime
+ARG VITE_MS_ESTOQUE_URL=http://localhost:3002
+ENV VITE_MS_ESTOQUE_URL=$VITE_MS_ESTOQUE_URL
 RUN npm run build
 
 FROM node:20-alpine
