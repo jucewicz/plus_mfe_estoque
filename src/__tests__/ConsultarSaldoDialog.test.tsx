@@ -50,4 +50,27 @@ describe('ConsultarSaldoDialog', () => {
 
     await waitFor(() => expect(screen.getByText(/Nenhum item encontrado/i)).toBeInTheDocument());
   });
+
+  it('limpa busca e resultados ao selecionar um item para ajustar (nao reaparece desatualizado ao reabrir)', async () => {
+    const item = { roupaId: 'r1', produtoId: 'camiseta', tamanho: 'M', cor: 'Branca', saldo: 10, atualizadoEm: '2026-06-23T00:00:00Z' };
+    vi.spyOn(estoqueApi, 'listarEstoque').mockResolvedValue([item]);
+    const onAjustar = vi.fn();
+    const onClose = vi.fn();
+
+    const { rerender } = render(<ConsultarSaldoDialog open onClose={onClose} onAjustar={onAjustar} />);
+
+    fireEvent.change(screen.getByLabelText(/Produto/i), { target: { value: 'camiseta' } });
+    fireEvent.click(screen.getByRole('button', { name: /Buscar/i }));
+    await waitFor(() => expect(screen.getByText('Saldo: 10')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /Ajustar inventário/i }));
+    expect(onAjustar).toHaveBeenCalledWith(item);
+
+    // o componente fica montado (pai so alterna a prop `open`), simula fechar e reabrir
+    rerender(<ConsultarSaldoDialog open={false} onClose={onClose} onAjustar={onAjustar} />);
+    rerender(<ConsultarSaldoDialog open onClose={onClose} onAjustar={onAjustar} />);
+
+    expect(screen.getByLabelText(/Produto/i)).toHaveValue('');
+    expect(screen.queryByText('Saldo: 10')).not.toBeInTheDocument();
+  });
 });

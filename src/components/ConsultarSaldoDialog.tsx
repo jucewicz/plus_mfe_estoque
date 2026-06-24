@@ -37,12 +37,21 @@ export function ConsultarSaldoDialog({ open, onClose, onAjustar }: ConsultarSald
     }
   }
 
-  function handleClose() {
+  function limpar() {
     setProdutoId('');
     setTamanho('');
     setResultados(null);
     setErro(null);
+  }
+
+  function handleClose() {
+    limpar();
     onClose();
+  }
+
+  function handleAjustar(item: Estoque) {
+    limpar();
+    onAjustar(item);
   }
 
   return (
@@ -73,7 +82,7 @@ export function ConsultarSaldoDialog({ open, onClose, onAjustar }: ConsultarSald
               <ListItem
                 key={item.roupaId}
                 secondaryAction={
-                  <Button size="small" variant="outlined" onClick={() => onAjustar(item)}>
+                  <Button size="small" variant="outlined" onClick={() => handleAjustar(item)}>
                     Ajustar inventário
                   </Button>
                 }
