@@ -13,3 +13,4 @@ dist-ssr
 
 # Tooling (local-only)
 .ai_log/
+.claude/
