@@ -1,8 +1,10 @@
 {
-  "name": "plus-mfe-estoque",
-  "private": true,
+  "name": "@jucewicz/plus-mfe-estoque",
   "version": "1.0.0",
   "type": "module",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "dev": "vite --port 4002",
     "build": "tsc -b && vite build",
