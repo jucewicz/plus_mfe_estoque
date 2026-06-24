@@ -1,0 +1,98 @@
+import { useState } from 'react';
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Alert,
+  List, ListItemButton, ListItemText, CircularProgress,
+} from '@mui/material';
+import { listarEstoque } from '../api/estoqueApi';
+import type { Estoque } from '../types/estoque';
+
+interface BuscarItemDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSelecionar: (item: Estoque) => void;
+}
+
+export function BuscarItemDialog({ open, onClose, onSelecionar }: BuscarItemDialogProps) {
+  const [produtoId, setProdutoId] = useState('');
+  const [tamanho, setTamanho] = useState('');
+  const [resultados, setResultados] = useState<Estoque[] | null>(null);
+  const [buscando, setBuscando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  async function handleBuscar() {
+    if (!produtoId) {
+      setErro('Informe o produto.');
+      return;
+    }
+    setBuscando(true);
+    setErro(null);
+    setResultados(null);
+    try {
+      const itens = await listarEstoque({ produtoId, tamanho: tamanho || undefined });
+      if (itens.length === 1) {
+        onSelecionar(itens[0]);
+        return;
+      }
+      setResultados(itens);
+    } catch (err) {
+      setErro((err as Error).message);
+    } finally {
+      setBuscando(false);
+    }
+  }
+
+  function handleClose() {
+    setProdutoId('');
+    setTamanho('');
+    setResultados(null);
+    setErro(null);
+    onClose();
+  }
+
+  return (
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+      <DialogTitle>Ajustar inventário</DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+        {erro && <Alert severity="error">{erro}</Alert>}
+        <TextField
+          label="Produto"
+          value={produtoId}
+          onChange={(e) => setProdutoId(e.target.value)}
+          fullWidth
+          autoFocus
+        />
+        <TextField
+          label="Tamanho (opcional)"
+          value={tamanho}
+          onChange={(e) => setTamanho(e.target.value)}
+          fullWidth
+        />
+        {buscando && <CircularProgress size={24} />}
+        {resultados !== null && resultados.length === 0 && (
+          <Alert severity="info">Nenhum item encontrado para esse produto/tamanho.</Alert>
+        )}
+        {resultados !== null && resultados.length > 1 && (
+          <>
+            <Alert severity="info">Mais de um item encontrado — escolha um:</Alert>
+            <List>
+              {resultados.map((item) => (
+                <ListItemButton key={item.roupaId} onClick={() => onSelecionar(item)}>
+                  <ListItemText
+                    primary={`${item.tamanho ?? '—'} / ${item.cor ?? '—'}`}
+                    secondary={`Saldo atual: ${item.saldo}`}
+                  />
+                </ListItemButton>
+              ))}
+            </List>
+          </>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose}>Cancelar</Button>
+        <Button onClick={handleBuscar} variant="contained" disabled={buscando}>
+          Buscar
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}

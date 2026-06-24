@@ -1,28 +1,31 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Container, Typography, TextField, Stack, Alert, CircularProgress } from '@mui/material';
+import { Container, Typography, TextField, Stack, Alert, CircularProgress, Button } from '@mui/material';
 import { EstoqueTable } from '../components/EstoqueTable';
 import { MovimentoDialog, type MovimentoTipo } from '../components/MovimentoDialog';
 import { HistoricoDialog } from '../components/HistoricoDialog';
+import { BuscarItemDialog } from '../components/BuscarItemDialog';
 import { listarEstoque, registrarEntrada, registrarSaida, ajustarSaldo } from '../api/estoqueApi';
 import type { Estoque } from '../types/estoque';
 
 export default function EstoqueDashboardPage() {
   const [itens, setItens] = useState<Estoque[]>([]);
   const [filtroProduto, setFiltroProduto] = useState('');
+  const [filtroTamanho, setFiltroTamanho] = useState('');
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
   const [dialogoMovimento, setDialogoMovimento] = useState<{ tipo: MovimentoTipo; item: Estoque } | null>(null);
   const [itemHistorico, setItemHistorico] = useState<Estoque | null>(null);
+  const [buscaAjusteAberta, setBuscaAjusteAberta] = useState(false);
 
   const carregar = useCallback(() => {
     setCarregando(true);
     setErro(null);
-    listarEstoque(filtroProduto || undefined)
+    listarEstoque({ produtoId: filtroProduto || undefined, tamanho: filtroTamanho || undefined })
       .then(setItens)
       .catch((err) => setErro((err as Error).message))
       .finally(() => setCarregando(false));
-  }, [filtroProduto]);
+  }, [filtroProduto, filtroTamanho]);
 
   useEffect(() => {
     carregar();
@@ -37,17 +40,36 @@ export default function EstoqueDashboardPage() {
     carregar();
   }
 
+  function handleItemEncontradoParaAjuste(item: Estoque) {
+    setBuscaAjusteAberta(false);
+    setDialogoMovimento({ tipo: 'ajuste', item });
+  }
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>Gestão de Estoque</Typography>
 
-      <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+      <Stack direction="row" spacing={2} sx={{ mb: 3, alignItems: 'center' }}>
         <TextField
           label="Filtrar por produto (produtoId)"
           value={filtroProduto}
-          onChange={(e) => setFiltroProduto(e.target.value)}
+          onChange={(e) => {
+            setFiltroProduto(e.target.value);
+            if (!e.target.value) setFiltroTamanho('');
+          }}
           size="small"
         />
+        <TextField
+          label="Filtrar por tamanho"
+          value={filtroTamanho}
+          onChange={(e) => setFiltroTamanho(e.target.value)}
+          size="small"
+          disabled={!filtroProduto}
+          helperText={!filtroProduto ? 'Informe o produto para filtrar por tamanho' : ' '}
+        />
+        <Button variant="outlined" onClick={() => setBuscaAjusteAberta(true)}>
+          Ajustar inventário
+        </Button>
       </Stack>
 
       {carregando && <CircularProgress />}
@@ -60,7 +82,6 @@ export default function EstoqueDashboardPage() {
           itens={itens}
           onEntrada={(item) => setDialogoMovimento({ tipo: 'entrada', item })}
           onSaida={(item) => setDialogoMovimento({ tipo: 'saida', item })}
-          onAjuste={(item) => setDialogoMovimento({ tipo: 'ajuste', item })}
           onHistorico={setItemHistorico}
         />
       )}
@@ -79,10 +100,16 @@ export default function EstoqueDashboardPage() {
       {itemHistorico && (
         <HistoricoDialog
           open
-          roupaId={itemHistorico.roupaId}
+          item={itemHistorico}
           onClose={() => setItemHistorico(null)}
         />
       )}
+
+      <BuscarItemDialog
+        open={buscaAjusteAberta}
+        onClose={() => setBuscaAjusteAberta(false)}
+        onSelecionar={handleItemEncontradoParaAjuste}
+      />
     </Container>
   );
 }

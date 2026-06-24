@@ -5,11 +5,10 @@ interface EstoqueTableProps {
   itens: Estoque[];
   onEntrada: (item: Estoque) => void;
   onSaida: (item: Estoque) => void;
-  onAjuste: (item: Estoque) => void;
   onHistorico: (item: Estoque) => void;
 }
 
-export function EstoqueTable({ itens, onEntrada, onSaida, onAjuste, onHistorico }: EstoqueTableProps) {
+export function EstoqueTable({ itens, onEntrada, onSaida, onHistorico }: EstoqueTableProps) {
   return (
     <Table>
       <TableHead>
@@ -37,7 +36,6 @@ export function EstoqueTable({ itens, onEntrada, onSaida, onAjuste, onHistorico 
               <Stack direction="row" spacing={1}>
                 <Button size="small" onClick={() => onEntrada(item)}>Entrada</Button>
                 <Button size="small" onClick={() => onSaida(item)}>Saída</Button>
-                <Button size="small" onClick={() => onAjuste(item)}>Ajustar</Button>
                 <Button size="small" onClick={() => onHistorico(item)}>Histórico</Button>
               </Stack>
             </TableCell>

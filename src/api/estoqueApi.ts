@@ -26,9 +26,24 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export function listarEstoque(produtoId?: string): Promise<Estoque[]> {
-  const qs = produtoId ? `?produtoId=${encodeURIComponent(produtoId)}` : '';
-  return request<Estoque[]>(`/estoque${qs}`);
+export interface FiltroEstoque {
+  produtoId?: string;
+  tamanho?: string;
+  cor?: string;
+}
+
+// Sem produtoId, lista tudo (GET /estoque). Com produtoId, usa a rota dedicada que
+// suporta filtrar por tamanho/cor dentro daquele produto (GET /estoque/produto/:produtoId).
+export function listarEstoque(filtro?: FiltroEstoque): Promise<Estoque[]> {
+  const { produtoId, tamanho, cor } = filtro ?? {};
+  if (!produtoId) {
+    return request<Estoque[]>('/estoque');
+  }
+  const params = new URLSearchParams();
+  if (tamanho) params.set('tamanho', tamanho);
+  if (cor) params.set('cor', cor);
+  const qs = params.toString();
+  return request<Estoque[]>(`/estoque/produto/${encodeURIComponent(produtoId)}${qs ? `?${qs}` : ''}`);
 }
 
 export function buscarEstoque(roupaId: string): Promise<Estoque> {
