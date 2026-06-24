@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env*.local
+
+# Editor / OS
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# Tooling (local-only)
+.ai_log/
