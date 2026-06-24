@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Alert,
-  List, ListItemButton, ListItemText, CircularProgress,
+  List, ListItem, ListItemText, CircularProgress,
 } from '@mui/material';
 import { listarEstoque } from '../api/estoqueApi';
 import type { Estoque } from '../types/estoque';
 
-interface BuscarItemDialogProps {
+interface ConsultarSaldoDialogProps {
   open: boolean;
   onClose: () => void;
-  onSelecionar: (item: Estoque) => void;
+  onAjustar: (item: Estoque) => void;
 }
 
-export function BuscarItemDialog({ open, onClose, onSelecionar }: BuscarItemDialogProps) {
+export function ConsultarSaldoDialog({ open, onClose, onAjustar }: ConsultarSaldoDialogProps) {
   const [produtoId, setProdutoId] = useState('');
   const [tamanho, setTamanho] = useState('');
   const [resultados, setResultados] = useState<Estoque[] | null>(null);
@@ -29,10 +29,6 @@ export function BuscarItemDialog({ open, onClose, onSelecionar }: BuscarItemDial
     setResultados(null);
     try {
       const itens = await listarEstoque({ produtoId, tamanho: tamanho || undefined });
-      if (itens.length === 1) {
-        onSelecionar(itens[0]);
-        return;
-      }
       setResultados(itens);
     } catch (err) {
       setErro((err as Error).message);
@@ -51,7 +47,7 @@ export function BuscarItemDialog({ open, onClose, onSelecionar }: BuscarItemDial
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Ajustar inventário</DialogTitle>
+      <DialogTitle>Consultar saldo</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
         {erro && <Alert severity="error">{erro}</Alert>}
         <TextField
@@ -71,20 +67,24 @@ export function BuscarItemDialog({ open, onClose, onSelecionar }: BuscarItemDial
         {resultados !== null && resultados.length === 0 && (
           <Alert severity="info">Nenhum item encontrado para esse produto/tamanho.</Alert>
         )}
-        {resultados !== null && resultados.length > 1 && (
-          <>
-            <Alert severity="info">Mais de um item encontrado — escolha um:</Alert>
-            <List>
-              {resultados.map((item) => (
-                <ListItemButton key={item.roupaId} onClick={() => onSelecionar(item)}>
-                  <ListItemText
-                    primary={`${item.tamanho ?? '—'} / ${item.cor ?? '—'}`}
-                    secondary={`Saldo atual: ${item.saldo}`}
-                  />
-                </ListItemButton>
-              ))}
-            </List>
-          </>
+        {resultados !== null && resultados.length > 0 && (
+          <List>
+            {resultados.map((item) => (
+              <ListItem
+                key={item.roupaId}
+                secondaryAction={
+                  <Button size="small" variant="outlined" onClick={() => onAjustar(item)}>
+                    Ajustar inventário
+                  </Button>
+                }
+              >
+                <ListItemText
+                  primary={`${item.tamanho ?? '—'} / ${item.cor ?? '—'}`}
+                  secondary={`Saldo: ${item.saldo}`}
+                />
+              </ListItem>
+            ))}
+          </List>
         )}
       </DialogContent>
       <DialogActions>

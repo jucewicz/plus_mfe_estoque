@@ -3,7 +3,7 @@ import { Container, Typography, TextField, Stack, Alert, CircularProgress, Butto
 import { EstoqueTable } from '../components/EstoqueTable';
 import { MovimentoDialog, type MovimentoTipo } from '../components/MovimentoDialog';
 import { HistoricoDialog } from '../components/HistoricoDialog';
-import { BuscarItemDialog } from '../components/BuscarItemDialog';
+import { ConsultarSaldoDialog } from '../components/ConsultarSaldoDialog';
 import { listarEstoque, registrarEntrada, registrarSaida, ajustarSaldo } from '../api/estoqueApi';
 import type { Estoque } from '../types/estoque';
 
@@ -16,7 +16,7 @@ export default function EstoqueDashboardPage() {
 
   const [dialogoMovimento, setDialogoMovimento] = useState<{ tipo: MovimentoTipo; item: Estoque } | null>(null);
   const [itemHistorico, setItemHistorico] = useState<Estoque | null>(null);
-  const [buscaAjusteAberta, setBuscaAjusteAberta] = useState(false);
+  const [consultaSaldoAberta, setConsultaSaldoAberta] = useState(false);
 
   const carregar = useCallback(() => {
     setCarregando(true);
@@ -40,8 +40,8 @@ export default function EstoqueDashboardPage() {
     carregar();
   }
 
-  function handleItemEncontradoParaAjuste(item: Estoque) {
-    setBuscaAjusteAberta(false);
+  function handleAjustarDaConsulta(item: Estoque) {
+    setConsultaSaldoAberta(false);
     setDialogoMovimento({ tipo: 'ajuste', item });
   }
 
@@ -67,8 +67,8 @@ export default function EstoqueDashboardPage() {
           disabled={!filtroProduto}
           helperText={!filtroProduto ? 'Informe o produto para filtrar por tamanho' : ' '}
         />
-        <Button variant="outlined" onClick={() => setBuscaAjusteAberta(true)}>
-          Ajustar inventário
+        <Button variant="outlined" onClick={() => setConsultaSaldoAberta(true)}>
+          Consultar saldo
         </Button>
       </Stack>
 
@@ -105,10 +105,10 @@ export default function EstoqueDashboardPage() {
         />
       )}
 
-      <BuscarItemDialog
-        open={buscaAjusteAberta}
-        onClose={() => setBuscaAjusteAberta(false)}
-        onSelecionar={handleItemEncontradoParaAjuste}
+      <ConsultarSaldoDialog
+        open={consultaSaldoAberta}
+        onClose={() => setConsultaSaldoAberta(false)}
+        onAjustar={handleAjustarDaConsulta}
       />
     </Container>
   );
