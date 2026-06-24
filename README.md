@@ -41,12 +41,24 @@ npm run test
 
 ```bash
 npm run build
-docker build --build-arg VITE_MS_ESTOQUE_URL=http://localhost:3002 -t plus-mfe-estoque .
+docker build -t plus-mfe-estoque .
 docker run -p 4002:4002 plus-mfe-estoque
 ```
 
-`VITE_MS_ESTOQUE_URL` precisa ser passado como `--build-arg` (não `environment:` do
-container), pois variáveis `VITE_*` são embutidas no bundle em tempo de build.
+Por padrão o bundle usa caminho relativo (`VITE_MS_ESTOQUE_URL` vazio) e o container roda
+um proxy server-side (`vite preview` + `preview.proxy`) para `/estoque` e `/health` —
+isso evita o problema de CORS do `plus_ms_estoque` mesmo dentro do Docker, já que o proxy
+roda no processo Node do container, não no browser.
+
+- O alvo do proxy é `http://host.docker.internal:3000` por padrão (alcança o
+  `plus-ms-estoque` publicado na porta 3000 do host via Docker Desktop/OrbStack).
+- Para apontar para outra porta/host (ex.: nome do serviço em docker-compose), sobrescreva
+  em runtime, sem rebuild:
+  ```bash
+  docker run -p 4002:4002 -e MS_ESTOQUE_PROXY_TARGET=http://plus-ms-estoque:3000 plus-mfe-estoque
+  ```
+- Se preferir não usar o proxy e apontar direto para um backend que já envie CORS,
+  builde com `--build-arg VITE_MS_ESTOQUE_URL=https://seu-backend`.
 
 ## CI/CD
 
