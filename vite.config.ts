@@ -1,8 +1,23 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import federation from '@originjs/vite-plugin-federation';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    federation({
+      name: 'mfe_estoque',
+      filename: 'remoteEntry.js',
+      exposes: {
+        './EstoqueDashboardPage': './src/pages/EstoqueDashboardPage.tsx',
+      },
+      shared: ['react', 'react-dom'],
+    }),
+  ],
+  build: {
+    target: 'esnext',
+    minify: false,
+  },
   server: {
     port: 4002,
     host: true,
