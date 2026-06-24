@@ -74,3 +74,16 @@ export function ajustarSaldo(roupaId: string, quantidade: number, observacao?: s
 export function listarMovimentos(roupaId: string): Promise<Movimento[]> {
   return request<Movimento[]>(`/estoque/${roupaId}/movimentos`);
 }
+
+export interface FiltroMovimentos {
+  desde?: string;
+  ate?: string;
+}
+
+export function listarTodosMovimentos(filtro: FiltroMovimentos): Promise<Movimento[]> {
+  const params = new URLSearchParams();
+  if (filtro.desde) params.set('desde', filtro.desde);
+  if (filtro.ate) params.set('ate', filtro.ate);
+  const qs = params.toString();
+  return request<Movimento[]>(`/estoque/movimentos${qs ? `?${qs}` : ''}`);
+}

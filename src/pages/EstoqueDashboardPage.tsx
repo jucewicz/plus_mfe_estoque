@@ -4,6 +4,7 @@ import { EstoqueTable } from '../components/EstoqueTable';
 import { MovimentoDialog, type MovimentoTipo } from '../components/MovimentoDialog';
 import { HistoricoDialog } from '../components/HistoricoDialog';
 import { ConsultarSaldoDialog } from '../components/ConsultarSaldoDialog';
+import { HistoricoCompletoDialog } from '../components/HistoricoCompletoDialog';
 import { listarEstoque, registrarEntrada, registrarSaida, ajustarSaldo } from '../api/estoqueApi';
 import type { Estoque } from '../types/estoque';
 
@@ -17,6 +18,7 @@ export default function EstoqueDashboardPage() {
   const [dialogoMovimento, setDialogoMovimento] = useState<{ tipo: MovimentoTipo; item: Estoque } | null>(null);
   const [itemHistorico, setItemHistorico] = useState<Estoque | null>(null);
   const [consultaSaldoAberta, setConsultaSaldoAberta] = useState(false);
+  const [historicoCompletoAberto, setHistoricoCompletoAberto] = useState(false);
 
   const carregar = useCallback(() => {
     setCarregando(true);
@@ -70,6 +72,9 @@ export default function EstoqueDashboardPage() {
         <Button variant="outlined" onClick={() => setConsultaSaldoAberta(true)}>
           Consultar saldo
         </Button>
+        <Button variant="outlined" onClick={() => setHistoricoCompletoAberto(true)}>
+          Histórico completo
+        </Button>
       </Stack>
 
       {carregando && <CircularProgress />}
@@ -109,6 +114,11 @@ export default function EstoqueDashboardPage() {
         open={consultaSaldoAberta}
         onClose={() => setConsultaSaldoAberta(false)}
         onAjustar={handleAjustarDaConsulta}
+      />
+
+      <HistoricoCompletoDialog
+        open={historicoCompletoAberto}
+        onClose={() => setHistoricoCompletoAberto(false)}
       />
     </Container>
   );

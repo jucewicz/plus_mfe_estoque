@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { listarEstoque, registrarEntrada } from '../api/estoqueApi';
+import { listarEstoque, registrarEntrada, listarTodosMovimentos } from '../api/estoqueApi';
 
 beforeEach(() => {
   vi.restoreAllMocks();
@@ -53,5 +53,26 @@ describe('estoqueApi', () => {
     await listarEstoque({ tamanho: 'M' });
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/estoque'), expect.anything());
     expect(fetchMock).not.toHaveBeenCalledWith(expect.stringContaining('/produto/'), expect.anything());
+  });
+
+  it('lista movimentos de todos os produtos com filtro de intervalo de data', async () => {
+    const mockData = [{ id: 'm1', roupaId: 'r1', produtoId: 'p1', tipo: 'entrada', quantidade: 10, saldoAnterior: 0, saldoPosterior: 10, criadoEm: '2026-06-23T00:00:00Z' }];
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => mockData });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await listarTodosMovimentos({ desde: '2026-06-01', ate: '2026-06-30' });
+    expect(result).toEqual(mockData);
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/estoque/movimentos?desde=2026-06-01&ate=2026-06-30'),
+      expect.anything(),
+    );
+  });
+
+  it('lista movimentos de todos os produtos sem filtro', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => [] });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await listarTodosMovimentos({});
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/estoque\/movimentos$/), expect.anything());
   });
 });
