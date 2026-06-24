@@ -3,6 +3,7 @@ dist
 dist-ssr
 *.local
 .env*.local
+*.tsbuildinfo
 
 # Editor / OS
 .DS_Store
