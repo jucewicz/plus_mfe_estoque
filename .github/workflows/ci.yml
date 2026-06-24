@@ -34,7 +34,11 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
       - run: npm ci
       - run: npm run build
-      - run: 'npm version patch -m "ci: release %s" --no-git-tag-version'
+      # version patch so altera o package.json no checkout efemero do runner (nunca
+      # e commitado de volta), entao sempre partiria de 1.0.0 e tentaria publicar a
+      # mesma versao de novo (409 Conflict). Usar o numero da run garante versao unica
+      # e crescente sem precisar commitar de volta no repo.
+      - run: 'npm version 1.0.${{ github.run_number }} --no-git-tag-version'
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
